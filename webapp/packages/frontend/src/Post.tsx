@@ -124,7 +124,7 @@ class Post extends React.Component<any> {
 
   public requestImageRotation = () => {
     axios({
-      url: "http://viking.westus2.cloudapp.azure.com:5000/api/v1.0/predict",
+      url: "/api/predict",
       method: "post",
       responseType: "json",
       data: {

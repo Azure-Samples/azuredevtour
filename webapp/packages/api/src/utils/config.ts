@@ -14,7 +14,8 @@ const {
   BLOB_IMAGE_PREFIX,
   ADMINS,
   APPINSIGHTS_INSTRUMENTATIONKEY,
-  IMAGE_ANALYSIS_BASE_URL
+  IMAGE_ANALYSIS_BASE_URL,
+  PREDICTION_API_URL
 } = process.env;
 
 export const twitterSecret: string = TWITTER_SECRET || "";
@@ -36,3 +37,4 @@ export const appInsightsIntrumentationKey: string =
 export const blobImagePrefix: string = BLOB_IMAGE_PREFIX || "photostour/";
 export const admins: string[] = ADMINS ? ADMINS.split(",") : [];
 export const imageAnalysisBaseUrl: string = IMAGE_ANALYSIS_BASE_URL || "";
+export const predictionApiUrl: string = PREDICTION_API_URL || "";
