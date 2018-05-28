@@ -9,7 +9,7 @@ import styled, { injectGlobal } from "react-emotion";
 import Feed from "./Feed";
 import Upload from "./Upload";
 import Login from "./Login";
-import EasyAuthUser from "./EasyAuthUser";
+// import EasyAuthUser from "./EasyAuthUser";
 import isLoggedIn from "./isLoggedIn";
 
 // tslint:disable-next-line:no-unused-expression
@@ -60,7 +60,6 @@ class App extends React.Component {
               )}
             </NavLi>
           </NavList>
-          <EasyAuthUser />
           <hr />
           <Switch>
             <Route exact path="/" component={Feed} />
