@@ -7,7 +7,9 @@
     "test": "jest",
     "dev": "ts-node-dev src/startup.ts",
     "populateMongo": "ts-node server/bin/populateMongo.ts",
-    "build": "tsc",
+    "build": "npm run -s build:ui; npm run -s build:server",
+    "build:ui": "parcel build ../frontend/src/index.html -d static",
+    "build:server": "tsc",
     "start": "node dist/src/startup.js"
   },
   "keywords": [],

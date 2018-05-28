@@ -83,6 +83,8 @@ if (process.env.NODE_ENV === "development") {
     const bundler = new Bundler("../frontend/src/index.html");
     app.use(bundler.middleware());
   });
+} else {
+  app.use("/", express.static("./static"));
 }
 
 app.listen(port, () => logger.info(`listening on port ${port}`));
