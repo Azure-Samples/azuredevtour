@@ -1,7 +1,8 @@
 .ipynb_checkpoints/
-data/
 __pycache__/
-logs/
-models/
 *.user
 .vs/
+.vscode/
+data/
+logs/
+models/

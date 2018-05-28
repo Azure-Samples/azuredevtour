@@ -9,7 +9,9 @@ RUN pip --no-cache-dir install \
         pillow \
         applicationinsights \
         requests \
-        python-dateutil 
+        python-dateutil \
+        flask-cors
+
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
