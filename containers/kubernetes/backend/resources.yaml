@@ -1,0 +1,70 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: phototour-api
+spec:
+  template:
+    metadata:
+      labels:
+        app: phototour-api
+    spec:
+      containers:
+      - name: phototour-api
+        image: <YOUR-REGISTRY>.azurecr.io/phototour-backend
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "0.5"
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        env:
+          - name: NODE_ENV
+            value: "production"
+          - name: KEYVAULT_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: phototour-secret
+                key: KEYVAULT_CLIENT_ID
+          - name: KEYVAULT_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: phototour-secret
+                key: KEYVAULT_CLIENT_SECRET
+          - name: KEYVAULT_URI
+            valueFrom:
+              secretKeyRef:
+                name: phototour-secret
+                key: KEYVAULT_URI
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phototour-api
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: phototour-api
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: phototour-api
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+  - host: phototour-api.<YOUR-DNS-NAME>
+    http:
+      paths:
+      - backend:
+          serviceName: phototour-api
+          servicePort: 80
+        path: /
+
