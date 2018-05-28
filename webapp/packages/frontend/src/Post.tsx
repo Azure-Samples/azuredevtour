@@ -42,8 +42,12 @@ const PosterContainer = styled("div")`
   padding: 15px;
 `;
 
-const MainImage = styled("img")`
+const MainImage: any = styled("img")`
   width: 100%;
+  transition: transform 0.5s ease-in-out;
+  transform: rotateZ(
+    ${(props: any) => props.rotationMultiplier * props.rotationBase}deg
+  );
 `;
 
 const VotesContainer = styled("div")`
@@ -107,7 +111,9 @@ class Post extends React.Component<any> {
     score: 0,
     comment: "",
     commentingState: isLoggedIn() ? "idle" : "loggedout",
-    comments: []
+    comments: [],
+    rotationBase: 45,
+    rotationMultiplier: 0
   };
 
   constructor(props) {
@@ -115,6 +121,34 @@ class Post extends React.Component<any> {
     this.state.comments = props.comments;
     this.state.score = props.upVotes - props.downVotes;
   }
+
+  public requestImageRotation = () => {
+    axios({
+      url: "http://viking.westus2.cloudapp.azure.com:5000/api/v1.0/predict",
+      method: "post",
+      responseType: "json",
+      data: {
+        url: this.props.photoUrl
+      }
+    })
+      .then(res => {
+        console.log(res);
+
+        const rotationMultiplier = Object.keys(res.data.predictions)
+          .sort()
+          .map(key => [key, res.data.predictions[key]])
+          .reduce(
+            (greatest, current) =>
+              greatest[1] > current[1] ? greatest : current
+          )[0];
+
+        this.setState({
+          rotationBase: res.data.angle,
+          rotationMultiplier
+        });
+      })
+      .catch(console.error);
+  };
 
   public upvote = () => {
     this.vote(true);
@@ -222,6 +256,7 @@ class Post extends React.Component<any> {
       <Container>
         <PosterContainer>
           <PosterImage
+            onClick={this.requestImageRotation}
             src={`http://placecorgi.com/50/50?id=${Math.floor(
               Math.random() * 100
             )}`}
@@ -234,7 +269,11 @@ class Post extends React.Component<any> {
           </PosterName>
           <div>{distanceInWordsToNow(new Date(this.props.uploadDate))}</div>
         </PosterContainer>
-        <MainImage src={this.props.photoUrl} />
+        <MainImage
+          src={this.props.photoUrl}
+          rotationBase={this.state.rotationBase}
+          rotationMultiplier={this.state.rotationMultiplier}
+        />
         <div>
           {votingComponent}
           {this.state.comments.map((c, index) => (
