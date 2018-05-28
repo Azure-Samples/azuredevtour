@@ -1,0 +1,7 @@
+blackwidow
+captain
+hawkeye
+hulk
+ironman
+thor
+superman
