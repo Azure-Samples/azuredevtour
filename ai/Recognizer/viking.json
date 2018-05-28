@@ -1,0 +1,11 @@
+{
+  "StartupBashScript": null,
+  "EnableBashScript": false,
+  "StartupProgram": "python",
+  "Environment": "",
+  "EnableRunInDocker": false,
+  "EnableConcurrency": false,
+  "CommonParameter": null,
+  "ExtraParameter": "-d ~/data/catsndogs -o . -b 24 -e 5",
+  "HyperParameters": []
+}

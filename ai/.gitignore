@@ -1,0 +1,8 @@
+.ipynb_checkpoints/
+__pycache__/
+*.user
+.vs/
+.vscode/
+data/
+logs/
+models/
