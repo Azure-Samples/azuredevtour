@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: phototour
+spec:
+  template:
+    metadata:
+      labels:
+        app: phototour
+    spec:
+      containers:
+      - name: phototour
+        image: <YOUR-REGISTRY>.azurecr.io/phototour-frontend
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: "1"
+            memory: 1G
+          requests:
+            cpu: "0.5"
+            memory: 1G
+        env:
+          - name: APPINSIGHTS_INTRUMENTATIONKEY
+            valueFrom:
+              secretKeyRef:
+                name: phototour-secret
+                key: APPINSIGHTS_INTRUMENTATIONKEY
+          - name: API_URL
+            value: phototour-api.<MY-INGRESS-DNS-NAME>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: phototour
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: phototour
+  type: ClusterIP
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: phototour
+  annotations:
+    kubernetes.io/ingress.class: addon-http-application-routing
+spec:
+  rules:
+  - host: phototour.<YOUR-DNS-NAME>
+    http:
+      paths:
+      - backend:
+          serviceName: phototour
+          servicePort: 80
+        path: /
+
