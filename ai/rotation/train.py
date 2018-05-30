@@ -34,20 +34,12 @@ def train(train_data_dir, test_data_dir, model_dir, log_dir, batch_size, epochs,
     # retrieve VGG16 for use in transfer learning
     info('Loading VGG16 for Transfer Learning')
     
-    model = applications.VGG16(weights = "imagenet", include_top=False, input_shape = (img_width, img_height, 3))
-    print('Freezing layers...')
-    # freeze layers
-    for layer in model.layers:
-        layer.trainable = False
-
-    #for layer in model.layers[len(model.layers)-5:]:
-    #    layer.trainable = True
+    model = applications.ResNet50(weights = "imagenet", include_top=False, input_shape = (img_width, img_height, 3))
 
     info('Adding Custom Layers to model')
     # add custom layers
     x = model.output
-    x = GlobalAveragePooling2D()(x)
-    x = Dense(256, activation="relu")(x)
+    x = Flatten()(x)
     prediction = Dense(4, activation="softmax", name="prediction")(x)
 
     # generate new model

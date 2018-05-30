@@ -6,8 +6,7 @@
     <ProjectGuid>68c2e72e-501d-4153-8ce9-24fdc5cb92b2</ProjectGuid>
     <ProjectHome>.</ProjectHome>
     <ProjectTypeGuids>{4655ED63-DC5A-4EB5-A3FF-49AF52FA4BC6};{888888A0-9F3D-457C-B088-3A5042F75D52}</ProjectTypeGuids>
-    <StartupFile>
-    </StartupFile>
+    <StartupFile>train.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    x:Class="PhotoTour.Core.PhotoListPage"
+    Title="{Binding Title}">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            
+            <ScrollView Grid.Row="0" Margin="0,20">
+                <FlexLayout x:Name="flexLayout"
+                            Wrap="Wrap"
+                            JustifyContent="SpaceAround" />
+            </ScrollView>
+
+            <Button 
+                Text="Take Photo" 
+                Command="{Binding TakePhotoCommand}"
+                IsEnabled="{Binding IsNotBusy}"
+                IsVisible="{Binding IsLoggedIn}"
+                Grid.Row="1" 
+                Style="{StaticResource ButtonOutline}" 
+                Margin="10,0,10,10" 
+                x:Name="addNewReview" />
+
+            <ActivityIndicator x:Name="activityIndicator"
+               IsRunning="{Binding IsBusy}"
+               IsVisible="{Binding IsBusy}"
+               VerticalOptions="Center" Grid.RowSpan="2" />
+        </Grid>
+    </ContentPage.Content>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{Binding LoginButtonText}" Command="{Binding LoginCommand}" IsEnabled="{Binding IsNotBusy}" />
+    </ContentPage.ToolbarItems>
+</ContentPage>

@@ -3,4 +3,7 @@ node_modules/
 dist/
 static/
 .env
+.cache/.vscode/
+.deployment
 .cache/
+.vscode
