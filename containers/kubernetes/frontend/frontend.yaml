@@ -27,7 +27,7 @@ spec:
                 name: phototour-secret
                 key: APPINSIGHTS_INTRUMENTATIONKEY
           - name: API_URL
-            value: phototour-api.<MY-INGRESS-DNS-NAME>
+            value: phototour-api.<YOUR-DNS-NAME>
 ---
 apiVersion: v1
 kind: Service
