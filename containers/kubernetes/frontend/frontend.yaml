@@ -21,13 +21,13 @@ spec:
             cpu: "0.5"
             memory: 1G
         env:
-          - name: APPINSIGHTS_INTRUMENTATIONKEY
+          - name: APPINSIGHTS_INSTRUMENTATIONKEY
             valueFrom:
               secretKeyRef:
                 name: phototour-secret
-                key: APPINSIGHTS_INTRUMENTATIONKEY
+                key: APPINSIGHTS_INSTRUMENTATIONKEY
           - name: API_URL
-            value: phototour-api.<MY-INGRESS-DNS-NAME>
+            value: phototour-api.<YOUR-DNS-NAME>
 ---
 apiVersion: v1
 kind: Service
