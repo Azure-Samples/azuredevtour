@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentPage 
+    xmlns="http://xamarin.com/schemas/2014/forms" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" 
+    x:Class="Reviewer.Core.PhotoViewerPage"
+    Title="Photo">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1.2*" />
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Image Grid.Row="0" Grid.ColumnSpan="2" Source="{Binding PhotoUrl}" BackgroundColor="Black" />
+
+            <StackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="0">
+                <BoxView HeightRequest="5" Color="{StaticResource Accent}" />
+                <BoxView HeightRequest="5" Color="{StaticResource SecondaryAccent}" />
+                <BoxView HeightRequest="5" Color="{StaticResource Primary}" />
+            </StackLayout>
+
+
+            <Button Text="{Binding Photo.UpVotes, StringFormat='Thumbs Up ({0})'}" Command="{Binding UpVoteCommand}" IsEnabled="{Binding IsLoggedIn}" 
+                    Style="{StaticResource ButtonOutline}" Grid.Row="2" Grid.Column="0"/>
+
+
+            <Button Text="{Binding Photo.DownVotes, StringFormat='Thumbs Down ({0})'}" Command="{Binding DownVoteCommand}" IsEnabled="{Binding IsLoggedIn}"
+                    Style="{StaticResource ButtonOutline}" Grid.Row="2" Grid.Column="1" />
+
+
+            <Button Text="Add Comment" Command="{Binding AddCommentCommand}" IsEnabled="{Binding IsLoggedIn}"
+                    Style="{StaticResource ButtonOutline}" Grid.Row="3" Grid.ColumnSpan="2" />
+            
+            <StackLayout Grid.Row="4" Grid.ColumnSpan="2" Spacing="0">
+                <BoxView HeightRequest="5" Color="{StaticResource Accent}" />
+                <BoxView HeightRequest="5" Color="{StaticResource SecondaryAccent}" />
+                <BoxView HeightRequest="5" Color="{StaticResource Primary}" />
+            </StackLayout>
+
+            <ListView Grid.Row="5" Grid.ColumnSpan="2" ItemsSource="{Binding ObservableComments}" x:Name="commentsList">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                       <TextCell Text="{Binding Text}" Detail="{Binding DisplayName}" />
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+
+            <Frame Grid.Row="0" Grid.Column="0" Grid.RowSpan="6" Grid.ColumnSpan="2" BackgroundColor="{StaticResource Secondary}" 
+                   Margin="20,100" IsVisible="{Binding AddingComment}">
+
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                   <Editor VerticalOptions="FillAndExpand" HorizontalOptions="FillAndExpand" Text="{Binding NewComment}" 
+                         Grid.Row="0" Grid.ColumnSpan="2" /> 
+
+                    <Button Text="Save" Command="{Binding SaveCommentCommand}" IsEnabled="{Binding SaveCommentEnabled}"
+                            BackgroundColor="{StaticResource Accent}" Grid.Row="1" TextColor="White" />
+                    
+                    <Button Text="Cancel" Command="{Binding CancelCommentCommand}" IsEnabled="{Binding CancelCommentEnabled}"
+                            BackgroundColor="{StaticResource Accent}" Grid.Row="1" Grid.Column="1" TextColor="White" />
+                </Grid>
+            </Frame>
+
+            <ActivityIndicator x:Name="activityIndicator"
+               IsRunning="{Binding IsBusy}"
+               IsVisible="{Binding IsBusy}"
+               VerticalOptions="Center" Grid.RowSpan="6" Grid.ColumnSpan="2" />
+        </Grid>
+    </ContentPage.Content>
+</ContentPage>
