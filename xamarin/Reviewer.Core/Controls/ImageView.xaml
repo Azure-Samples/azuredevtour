@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ContentView xmlns="http://xamarin.com/schemas/2014/forms" xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml" x:Class="PhotoTour.Core.ImageView">
+    <ContentView.Content>
+        <Grid>
+            <BoxView Color="{StaticResource Accent}" />
+            <Image x:Name="theImage" BackgroundColor="Black" Margin="3" Aspect="AspectFill" />
+        </Grid>
+    </ContentView.Content>
+</ContentView>
