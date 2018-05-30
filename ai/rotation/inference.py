@@ -24,7 +24,7 @@ def predict(vector, model, labels=None):
             response[labels[i]] = v
 
     r = {}
-    r['angle'] = 30
+    r['angle'] = 90
     r['predictions'] = response
     
     return r
