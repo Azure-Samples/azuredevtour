@@ -2,7 +2,7 @@ import React from "react";
 
 class Login extends React.Component {
   public login() {
-    window.location.href = `${process.env.API_URL}/auth/twitter`;
+    window.location.href = `/auth/twitter`;
   }
   public render() {
     return (

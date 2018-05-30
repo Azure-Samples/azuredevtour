@@ -32,7 +32,7 @@ export const sessionSecret: string =
 export const blobUrl: string =
   BLOB_URL || "https://photostour.blob.core.windows.net/";
 export const sessionUrl: string = SESSION_URL || "";
-export const appInsightsIntrumentationKey: string =
+export const appInsightsInstrumentationKey: string =
   APPINSIGHTS_INSTRUMENTATIONKEY || "";
 export const blobImagePrefix: string = BLOB_IMAGE_PREFIX || "photostour/";
 export const admins: string[] = ADMINS ? ADMINS.split(",") : [];
