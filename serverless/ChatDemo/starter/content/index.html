@@ -96,14 +96,14 @@
     }
 
     function sendMessage(sender, messageText) {
-      return axios.post(`${apiBaseUrl}/api/messages`, {
+      return axios.post(`${apiBaseUrl}/api/CreateMessage`, {
         sender: sender,
         text: messageText
       }, getAxiosConfig()).then(resp => resp.data);
     }
 
     function getMessages() {
-      return axios.get(`${apiBaseUrl}/api/messages`, getAxiosConfig())
+      return axios.get(`${apiBaseUrl}/api/GetMessages`, getAxiosConfig())
         .then(resp => resp.data);
     }
 
