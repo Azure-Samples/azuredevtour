@@ -2,7 +2,6 @@ import { createBlobService } from "azure-storage";
 import { Request, Response } from "express";
 import { MongoClient } from "mongodb";
 import nanoid from "nanoid";
-import sharp from "sharp";
 import {
   blobImagePrefix,
   blobUrl,
@@ -89,25 +88,12 @@ export default function postPicApi(req: Request, res: Response): void {
     });
     return;
   }
-  console.log("user", pic);
 
   let client: MongoClient;
-  sharp(pic.data)
-    .resize(1024, 1024)
-    .max()
-    .withoutEnlargement()
-    .jpeg()
-    .toBuffer({ resolveWithObject: true })
-    .then(img => {
-      img.mimetype = "image/jpeg";
-      console.log("img", img);
-      return Promise.all([
-        MongoClient.connect(dbUrl, {
-          auth: { user: dbUser, password: dbPass }
-        }),
-        putBlobIntoStorage(img)
-      ]);
-    })
+  Promise.all([
+    MongoClient.connect(dbUrl, { auth: { user: dbUser, password: dbPass } }),
+    putBlobIntoStorage(pic)
+  ])
     .then(([resClient, { photoUrl }]) => {
       resUrl = photoUrl;
       client = resClient;
@@ -119,7 +105,14 @@ export default function postPicApi(req: Request, res: Response): void {
       logger.silly(JSON.stringify(req.files, null, 2));
 
       const comments = caption
-        ? [{ date: new Date(), text: caption, displayName, userId: "" }]
+        ? [
+            {
+              date: new Date(),
+              text: caption,
+              displayName,
+              userId: ""
+            }
+          ]
         : [];
 
       return db.collection(dbCollection).insertOne({
