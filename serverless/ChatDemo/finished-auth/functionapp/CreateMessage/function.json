@@ -1,0 +1,34 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "route": "messages",
+      "methods": [
+        "post"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "type": "signalR",
+      "name": "signalRMessages",
+      "hubName": "chat",
+      "direction": "out"
+    },
+    {
+      "name": "cosmosDBMessage",
+      "type": "cosmosDB",
+      "databaseName": "chat",
+      "collectionName": "messages",
+      "createIfNotExists": true, 
+      "direction": "out"
+    }
+  ]
+}

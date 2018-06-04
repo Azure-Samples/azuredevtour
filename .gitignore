@@ -89,10 +89,11 @@ Resource.Designer.cs
 */sqlite3/*.ide
 *._Info.plist
 
--dist/
--static/
--.env
--.cache/.vscode/
--.deployment
--.cache/
--.vscode
+dist/
+static/
+.env
+.cache/.vscode/
+.deployment
+.cache/
+.vscode
+local.settings.json
