@@ -1,0 +1,29 @@
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "authLevel": "anonymous",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "route": "messages",
+      "methods": [
+        "get"
+      ]
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
+      "name": "messages",
+      "type": "cosmosDB",
+      "databaseName": "chat",
+      "collectionName": "messages",
+      "sqlQuery": "select * from c order by c._ts desc",
+      "direction": "in",
+      "createIfNotExists": true
+    }
+  ]
+}

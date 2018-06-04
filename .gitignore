@@ -7,3 +7,4 @@ static/
 .deployment
 .cache/
 .vscode
+local.settings.json
