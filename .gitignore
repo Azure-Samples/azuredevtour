@@ -76,7 +76,6 @@ SiaqodbManager/*.dll
 */csx/
 *.bacpac
 UpgradeLog.htm
-UpgradeLog2.htm
 App_Data/
 
 bower_components/
@@ -89,3 +88,11 @@ dev/
 Resource.Designer.cs
 */sqlite3/*.ide
 *._Info.plist
+
+-dist/
+-static/
+-.env
+-.cache/.vscode/
+-.deployment
+-.cache/
+-.vscode
