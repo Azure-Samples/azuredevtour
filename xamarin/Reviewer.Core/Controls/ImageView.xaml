@@ -3,7 +3,7 @@
     <ContentView.Content>
         <Grid>
             <BoxView Color="{StaticResource Accent}" />
-            <Image x:Name="theImage" Margin="3" Aspect="AspectFill" />
+            <Image x:Name="theImage" BackgroundColor="Black" Margin="3" Aspect="AspectFill" />
         </Grid>
     </ContentView.Content>
 </ContentView>
