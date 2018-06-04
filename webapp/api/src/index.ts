@@ -1,5 +1,5 @@
 // tslint:disable-next-line:no-var-requires
-// const appInsights = require("applicationinsights");
+const appInsights = require("applicationinsights");
 import bodyParser from "body-parser";
 import mongoStoreFn from "connect-mongo";
 import cookieParser from "cookie-parser";
@@ -12,7 +12,7 @@ import passport from "passport";
 import api from "./api";
 import auth from "./auth";
 import {
-  // appInsightsIntrumentationKey,
+  appInsightsInstrumentationKey,
   dbPass,
   dbUrl,
   dbUser,
@@ -21,8 +21,8 @@ import {
 } from "./utils/config";
 import logger from "./utils/logger";
 
-// appInsights.setup(appInsightsIntrumentationKey);
-// appInsights.start();
+appInsights.setup(appInsightsInstrumentationKey);
+appInsights.start();
 const app = express();
 
 const MongoStore = mongoStoreFn(session);
@@ -84,7 +84,7 @@ if (process.env.NODE_ENV === "development") {
     app.use(bundler.middleware());
   });
 } else {
-  app.use("/", express.static("./static"));
+  app.use("/", express.static("./dist/static"));
 }
 
 app.listen(port, () => logger.info(`listening on port ${port}`));

@@ -257,9 +257,7 @@ class Post extends React.Component<any> {
         <PosterContainer>
           <PosterImage
             onClick={this.requestImageRotation}
-            src={`http://placecorgi.com/50/50?id=${Math.floor(
-              Math.random() * 100
-            )}`}
+            src="https://placeimg.com/50/50/animals"
             alt="profile"
           />
           <PosterName>
