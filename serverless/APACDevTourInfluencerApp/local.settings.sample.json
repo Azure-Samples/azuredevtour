@@ -1,0 +1,11 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+      "AzureWebJobsStorage": "",
+      "AzureWebJobsDashboard": "",
+      "ResultsQueue": "",
+      "MongoHostname": "",
+      "MongoUsername": "",
+      "MongoPassword": ""
+  }
+}

@@ -5,12 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Client" Version="1.1.4-preview0002" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
-    <PackageReference Include="Microsoft.Identity.Client" Version="1.1.2-preview0008" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Xam.Plugin.Media" Version="3.2.0.245-beta" />
+    <PackageReference Include="Xam.Plugin.Media" Version="4.0.0.9" />
     <PackageReference Include="WindowsAzure.Storage" Version="9.1.1" />
-    <PackageReference Include="MonkeyCache.FileStore" Version="0.1.0.1-beta" />
+    <PackageReference Include="MonkeyCache.FileStore" Version="0.1.0.9-beta" />
     <PackageReference Include="System.Net.Http.Formatting.Extension" Version="5.2.3" />
     <PackageReference Include="Microsoft.AppCenter" Version="1.6.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="1.6.0" />

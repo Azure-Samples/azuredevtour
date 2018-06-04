@@ -31,7 +31,12 @@ namespace PhotoTour.Core
 		[BsonElement("comments")]
 		public List<Comment> Comments { get => comments; set => SetProperty(ref comments, value); }
 
-		int upVotes;
+	    //Comment comment;
+	    //[BsonElement("comment")]
+	    //public Comment Comment { get => comment; set => SetProperty(ref comment, value); }
+
+
+        int upVotes;
 		[BsonElement("upVotes")]
 		public int UpVotes { get => upVotes; set => SetProperty(ref upVotes, value); }
 
@@ -51,7 +56,13 @@ namespace PhotoTour.Core
 		[BsonElement("displayName")]
 		public string DisplayName { get => displayName; set => SetProperty(ref displayName, value); }
 
-		[BsonElement("votes")]
+	    string caption;
+	    [BsonElement("caption")]
+	    public string Caption { get => caption; set => SetProperty(ref caption, value); }
+
+
+        [BsonElement("votes")]
+        [BsonRepresentation(BsonType.Int64, AllowTruncation = true)]
 		public int Votes { get; set; }
 	}
 }

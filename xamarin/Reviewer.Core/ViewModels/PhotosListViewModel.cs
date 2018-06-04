@@ -16,12 +16,20 @@ namespace PhotoTour.Core
 {
 	public class PhotosListViewModel : BaseViewModel
 	{
-		readonly string logoutText = "Log Out";
-		readonly string loginText = "Log In";
+		private readonly string logoutText = "Log Out";
+	    private readonly string loginText = "Log In";
 
-		IDataService dataService;
+	    private AuthenticationResult authResult;
 
-		bool isLoggedIn = false;
+        private readonly IDataService dataService;
+	    private readonly IIdentityService identityService;
+
+        public Command LoginCommand { get; }
+        public ICommand TakePhotoCommand { get; }
+
+	    public event EventHandler<Uri> NewPhotoAdded;
+
+        bool isLoggedIn = false;
 		public bool IsLoggedIn
 		{
 			get => isLoggedIn;
@@ -38,16 +46,7 @@ namespace PhotoTour.Core
 
 		string loginButtonText;
 		public string LoginButtonText { get => loginButtonText; set => SetProperty(ref loginButtonText, value); }
-
-		public Command LoginCommand { get; }
-
-		public ICommand TakePhotoCommand { get; }
-
-		public event EventHandler<Uri> NewPhotoAdded;
-
-		AuthenticationResult authResult;
-		IIdentityService identityService;
-
+        
 		public PhotosListViewModel()
 		{
 			dataService = DependencyService.Get<IDataService>();
@@ -63,7 +62,7 @@ namespace PhotoTour.Core
 			Task.Run(async () => await CheckLoginStatus());
 		}
 
-		public async Task CheckLoginStatus()
+		private async Task CheckLoginStatus()
 		{
 			authResult = await identityService.GetCachedSignInToken();
 
@@ -93,7 +92,7 @@ namespace PhotoTour.Core
 			}
 		}
 
-		async Task ExecuteLoginCommand()
+		private async Task ExecuteLoginCommand()
 		{
 			if (IsBusy)
 				return;
@@ -149,7 +148,7 @@ namespace PhotoTour.Core
 			}
 		}
 
-		async Task ExecuteTakePhotoCommand()
+		private async Task ExecuteTakePhotoCommand()
 		{
 			if (IsBusy)
 				return;
@@ -206,7 +205,7 @@ namespace PhotoTour.Core
 			}
 		}
 
-		async Task UploadPhoto(MediaFile mediaFile)
+		private async Task UploadPhoto(MediaFile mediaFile)
 		{
 			UploadProgress progressUpdater = new UploadProgress();
 			Uri blobUri = null;
