@@ -21,7 +21,7 @@ namespace PhotoTour.Core
 
 	    string comment;
 	    [BsonElement("comment")]
-	    public string Commento { get => comment; set => SetProperty(ref comment, value); }
+	    public string CommentText { get => comment; set => SetProperty(ref comment, value); }
 
         DateTime date;
 		[BsonElement("date")]
