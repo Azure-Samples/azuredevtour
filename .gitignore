@@ -7,3 +7,7 @@ static/
 .deployment
 .cache/
 .vscode
+serverless/ChatDemo/finished/functionapp/local.settings.json
+serverless/ChatDemo/finished-auth/functionapp/local.settings.json
+serverless/ChatDemo/finished-auth/functionapp/local.settings.json
+serverless/ChatDemo/finished-auth/functionapp/local.settings.json

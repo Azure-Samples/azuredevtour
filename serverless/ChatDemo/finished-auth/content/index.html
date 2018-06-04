@@ -1,0 +1,143 @@
+<html>
+
+<head>
+  <title>Simple Chat</title>
+  <script>
+      window.apiBaseUrl = 'https://apac-functions-chat.azurewebsites.net';
+      //window.apiBaseUrl = 'http://localhost:7071';
+  </script>
+  <script src="auth.js"></script>
+</head>
+
+<body>
+  <div id="app">
+    <div v-if="authenticated">
+      You are logged in [<a href="#" v-on:click.prevent="logout">Logout</a>]
+    </div>
+    <div v-if="!authenticated">
+      <a href="#" v-on:click.prevent="login">Login</a>
+    </div>
+    <div class="signalr-demo">
+      <form v-on:submit.prevent="sendNewMessage">
+        message: <input type="text" v-model="newMessage" id="message-box" class="form-control" />
+      </form>
+      <div v-if="!ready">Loading...</div>
+      <div v-if="ready">
+        <hr />
+        <ul>
+            <li v-for="message in messages">
+              <img :src="message.avatarUrl" />
+              {{ message.sender }}: {{ message.text }}
+            </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+  <script src="https://unpkg.com/@aspnet/signalr@1.0.0-rc1-final/dist/browser/signalr.js"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    const data = {
+      authenticated: false,
+      username: '',
+      newMessage: '',
+      messages: [],
+      ready: false
+    };
+
+    const app = new Vue({
+      el: '#app',
+      data: data,
+      methods: {
+        sendNewMessage: function() {
+          sendMessage(this.username, this.newMessage);
+          this.newMessage = '';
+        },
+        login: function() {
+          window.location.href = window.auth.loginUrl;
+        },
+        logout: window.auth.logout
+      }
+    });
+
+    const apiBaseUrl = window.apiBaseUrl;
+    const hubName = 'simplechat';
+    getConnectionInfo().then(info => {      
+      if (!window.auth.token) {
+        while (!data.username && data.username !== null) {
+          data.username = prompt('Enter a username');
+        }
+        
+        if (data.username === null) return;
+      }
+
+      data.ready = true;
+      const options = {
+        accessTokenFactory: () => info.accessKey
+      };
+
+      const connection = new signalR.HubConnectionBuilder()
+        .withUrl(info.endpoint, options)
+        .configureLogging(signalR.LogLevel.Information)
+        .build();
+        
+      connection.on('newMessage', newMessage);
+      connection.onclose(() => console.log('disconnected'));
+
+      console.log('retrieving messages');
+      getMessages().then(messages => {
+        for(let m of messages.reverse()) {
+          newMessage(m);
+        }
+
+        console.log('connecting...');
+        connection.start()
+          .then(() => console.log('connected!'))
+          .catch(console.error);
+      });
+    }).catch(alert);
+
+    function getAxiosConfig() {
+      const config = {
+        headers: {}
+      };
+      if (window.auth.token) {
+        config.headers['X-ZUMO-AUTH'] = window.auth.token;
+      }
+      return config;
+    }
+
+    function getConnectionInfo() {
+      return axios.post(`${apiBaseUrl}/api/negotiate`, null, getAxiosConfig())
+        .then(resp => resp.data);
+    }
+
+    function sendMessage(sender, messageText) {
+      return axios.post(`${apiBaseUrl}/api/messages`, {
+        sender: sender,
+        text: messageText
+      }, getAxiosConfig()).then(resp => resp.data);
+    }
+
+    function getMessages() {
+      return axios.get(`${apiBaseUrl}/api/messages`, getAxiosConfig())
+        .then(resp => resp.data);
+    }
+
+    function newMessage(message) {
+      if (!message.avatarUrl) {
+        message.avatarUrl = 'https://avatars.io/static/default_48.jpg';
+      }
+      if (!message.sender) {
+        message.sender = "anonymous";
+      }
+      data.messages.unshift(message);
+    }
+
+    data.authenticated = window.auth && window.auth.token;
+
+  </script>
+</body>
+
+</html>
