@@ -19,11 +19,20 @@ namespace PhotoTour.Core
 		[BsonElement("text")]
 		public string Text { get => text; set => SetProperty(ref text, value); }
 
-		DateTime date;
+	    string comment;
+	    [BsonElement("comment")]
+	    public string CommentText { get => comment; set => SetProperty(ref comment, value); }
+
+        DateTime date;
 		[BsonElement("date")]
 		public DateTime Date { get => date; set => SetProperty(ref date, value); }
 
-		string displayName;
+        DateTime time;
+        [BsonElement("time")]
+        public DateTime Time { get => time; set => SetProperty(ref time, value); }
+
+
+        string displayName;
 		[BsonElement("displayName")]
 		public string DisplayName { get => displayName; set => SetProperty(ref displayName, value); }
 	}
