@@ -23,9 +23,6 @@ namespace PhotoTour.Core
 			}));
 		}
 
-		public Image TheImage {
-		    get => theImage;
-		    set => theImage = value;
-		}
+		public Image TheImage { get => theImage; }
 	}
 }

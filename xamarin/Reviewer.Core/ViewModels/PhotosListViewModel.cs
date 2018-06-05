@@ -9,266 +9,340 @@ using Microsoft.Identity.Client;
 using Plugin.Media;
 using Plugin.Media.Abstractions;
 using System.IO;
-using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+
 
 namespace PhotoTour.Core
 {
-	public class PhotosListViewModel : BaseViewModel
-	{
-		private readonly string logoutText = "Log Out";
-	    private readonly string loginText = "Log In";
+    public class PhotosListViewModel : BaseViewModel
+    {
+        readonly string logoutText = "Log Out";
+        readonly string loginText = "Log In";
 
-	    private AuthenticationResult authResult;
+        public event EventHandler NotConnectedEvent;
+        public event EventHandler NewPhotoAdded;
 
-        private readonly IDataService dataService;
-	    private readonly IIdentityService identityService;
-
-        public Command LoginCommand { get; }
-        public ICommand TakePhotoCommand { get; }
-
-	    public event EventHandler<Uri> NewPhotoAdded;
+        IDataService dataService;
 
         bool isLoggedIn = false;
-		public bool IsLoggedIn
-		{
-			get => isLoggedIn;
-			set
-			{
-				SetProperty(ref isLoggedIn, value);
-				IsNotLoggedIn = !IsLoggedIn;
-				LoginCommand?.ChangeCanExecute();
-			}
-		}
+        public bool IsLoggedIn
+        {
+            get => isLoggedIn;
+            set
+            {
+                SetProperty(ref isLoggedIn, value);
+                IsNotLoggedIn = !IsLoggedIn;
+                LoginCommand?.ChangeCanExecute();
+            }
+        }
 
-		bool isNotLoggedIn = true;
-		public bool IsNotLoggedIn { get => isNotLoggedIn; set => SetProperty(ref isNotLoggedIn, value); }
+        bool isNotLoggedIn = true;
+        public bool IsNotLoggedIn { get => isNotLoggedIn; set => SetProperty(ref isNotLoggedIn, value); }
 
-		string loginButtonText;
-		public string LoginButtonText { get => loginButtonText; set => SetProperty(ref loginButtonText, value); }
-        
-		public PhotosListViewModel()
-		{
-			dataService = DependencyService.Get<IDataService>();
-			Title = "All Photos";
+        string loginButtonText;
+        public string LoginButtonText { get => loginButtonText; set => SetProperty(ref loginButtonText, value); }
 
-			IsLoggedIn = false;
+        long pageSize;
+        public long PageSize { get => pageSize; set => SetProperty(ref pageSize, value); }
 
-			LoginCommand = new Command(async () => await ExecuteLoginCommand());
-			TakePhotoCommand = new Command(async () => await ExecuteTakePhotoCommand());
+        long currentPage;
+        public long CurrentPage { get => currentPage; set => SetProperty(ref currentPage, value); }
 
-			identityService = DependencyService.Get<IIdentityService>();
+        long totalPages;
+        public long TotalPages { get => totalPages; set => SetProperty(ref totalPages, value); }
 
-			Task.Run(async () => await CheckLoginStatus());
-		}
+        bool canGetNextPage;
+        public bool CanGetNextPage { get => canGetNextPage; set => SetProperty(ref canGetNextPage, value); }
 
-		private async Task CheckLoginStatus()
-		{
-			authResult = await identityService.GetCachedSignInToken();
+        bool canGetPreviousPage;
+        public bool CanGetPreviousPage { get => canGetPreviousPage; set => SetProperty(ref canGetPreviousPage, value); }
 
-			Xamarin.Forms.Device.BeginInvokeOnMainThread(() =>
-			{
-				IsLoggedIn = authResult?.User != null;
+        public Command LoginCommand { get; }
 
-				LoginButtonText = IsLoggedIn ? logoutText : loginText;
-			});
-		}
+        public ICommand TakePhotoCommand { get; }
 
-		public async Task<List<Photo>> LoadPhotos()
-		{
-			if (IsBusy || !CrossConnectivity.Current.IsConnected)
-				return new List<Photo>();
+        AuthenticationResult authResult;
+        IIdentityService identityService;
 
-			try
-			{
-				IsBusy = true;
-				var photos = await dataService.GetAllPhotos();
+        public PhotosListViewModel()
+        {
+            dataService = DependencyService.Get<IDataService>();
+            Title = "All Photos";
 
-				return photos;
-			}
-			finally
-			{
-				IsBusy = false;
-			}
-		}
+            CurrentPage = 1;
+            PageSize = 15;
+            CanGetNextPage = false;
+            CanGetPreviousPage = false;
 
-		private async Task ExecuteLoginCommand()
-		{
-			if (IsBusy)
-				return;
+            IsLoggedIn = false;
 
-			if (!CrossConnectivity.Current.IsConnected)
-			{
-				await Application.Current.MainPage.DisplayAlert("No Internet", "Cannot Login - No Internet", "OK");
-				return;
-			}
+            LoginCommand = new Command(async () => await ExecuteLoginCommand());
+            TakePhotoCommand = new Command(async () => await ExecuteTakePhotoCommand());
 
-			if (IsNotLoggedIn)
-			{
-				try
-				{
-					IsBusy = true;
+            identityService = DependencyService.Get<IIdentityService>();
 
-					authResult = await identityService.Login();
-				}
-				finally
-				{
-					IsBusy = false;
-				}
+            Task.Run(async () =>
+            {
+                await CheckLoginStatus();
+                //await GetTotalPhotos();
+            });
+        }
 
-				if (authResult?.User == null)
-				{
-					IsLoggedIn = false;
-					LoginButtonText = loginText;
-				}
-				else
-				{
-					IsLoggedIn = true;
-					LoginButtonText = logoutText;
+        public async Task CheckLoginStatus()
+        {
+            authResult = await identityService.GetCachedSignInToken();
 
-					Analytics.TrackEvent("Login", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
-				}
-			}
-			else if (IsLoggedIn)
-			{
-				try
-				{
-					IsBusy = true;
+            Xamarin.Forms.Device.BeginInvokeOnMainThread(() =>
+            {
+                IsLoggedIn = authResult?.User != null;
 
-					Analytics.TrackEvent("Logout", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
+                LoginButtonText = IsLoggedIn ? logoutText : loginText;
+            });
+        }
 
-					identityService.Logout();
-					IsLoggedIn = false;
-					LoginButtonText = loginText;
-				}
-				finally
-				{
-					IsBusy = false;
-				}
-			}
-		}
+        async Task GetTotalPhotos()
+        {
+            var totalPhotos = await dataService.TotalPhotos();
 
-		private async Task ExecuteTakePhotoCommand()
-		{
-			if (IsBusy)
-				return;
+            double ceiling = (double)totalPhotos / (double)PageSize;
 
-			if (IsNotLoggedIn)
-				return;
+            TotalPages = (long)Math.Ceiling(ceiling);
+        }
 
-			try
-			{
-				IsBusy = true;
+        public async Task<List<Photo>> LoadPhotos()
+        {
+            if (IsBusy)
+                return new List<Photo>();
 
-				var actions = new List<string>();
+            try
+            {
+                IsBusy = true;
 
-				if (CrossMedia.Current.IsTakePhotoSupported && CrossMedia.Current.IsCameraAvailable)
-					actions.Add("Take Photo");
+                if (!CrossConnectivity.Current.IsConnected)
+                {
+                    await Application.Current.MainPage.DisplayAlert("No Internet", "Cannot Get Data - No Internet", "OK");
+                    return new List<Photo>();
+                }
 
-				if (CrossMedia.Current.IsPickPhotoSupported)
-					actions.Add("Pick Photo");
+                await GetTotalPhotos();
+                //var photos = await dataService.GetAllPhotos();
+                //var photos = await dataService.GetLatestPhotos();
+                var photos = await dataService.GetPageOfPhotos(CurrentPage, PageSize);
 
-				var result = await Application.Current.MainPage.DisplayActionSheet("Take or Pick Photo", "Cancel", null, actions.ToArray());
+                CanGetPreviousPage = CurrentPage != 1;
+                CanGetNextPage = CurrentPage < TotalPages;
 
-				MediaFile mediaFile = null;
-				if (result == "Take Photo")
-				{
-					var options = new StoreCameraMediaOptions
-					{
-						PhotoSize = PhotoSize.Medium,
-						DefaultCamera = CameraDevice.Rear
-					};
+                return photos;
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+        }
 
-					mediaFile = await CrossMedia.Current.TakePhotoAsync(options);
+        async Task ExecuteLoginCommand()
+        {
+            if (IsBusy)
+                return;
 
-					Analytics.TrackEvent("Take Photo", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
-				}
-				else if (result == "Pick Photo")
-				{
-					mediaFile = await CrossMedia.Current.PickPhotoAsync();
+            if (!CrossConnectivity.Current.IsConnected)
+            {
+                await Application.Current.MainPage.DisplayAlert("No Internet", "Cannot Login - No Internet", "OK");
+                return;
+            }
 
-					Analytics.TrackEvent("Pick Photo", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
-				}
-				else
-				{
-					Analytics.TrackEvent("Bailed on photo", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
-				}
+            if (IsNotLoggedIn)
+            {
+                try
+                {
+                    IsBusy = true;
 
-				if (mediaFile == null)
-					return;
+                    authResult = await identityService.Login();
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
 
-				await UploadPhoto(mediaFile);
-			}
-			finally
-			{
-				IsBusy = false;
-			}
-		}
+                if (authResult?.User == null)
+                {
+                    IsLoggedIn = false;
+                    LoginButtonText = loginText;
+                }
+                else
+                {
+                    IsLoggedIn = true;
+                    LoginButtonText = logoutText;
 
-		private async Task UploadPhoto(MediaFile mediaFile)
-		{
-			UploadProgress progressUpdater = new UploadProgress();
-			Uri blobUri = null;
-			Uri thumbnailUri = null;
+                    Analytics.TrackEvent("Login", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
+                }
+            }
+            else if (IsLoggedIn)
+            {
+                try
+                {
+                    IsBusy = true;
 
-			using (var mediaStream = mediaFile.GetStream())
-			{
-				if (!(mediaStream is FileStream fs))
-					return;
+                    Analytics.TrackEvent("Logout", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
 
-				// Create a thumbnail to go along with it!
-				using (var thumbStream = new MemoryStream(await GetThumbnailBytes(fs)))
-				{
-					var storageService = DependencyService.Get<IStorageService>();
+                    identityService.Logout();
+                    IsLoggedIn = false;
+                    LoginButtonText = loginText;
+                }
+                finally
+                {
+                    IsBusy = false;
+                }
+            }
+        }
 
-					thumbnailUri = await storageService.UploadBlob(thumbStream, progressUpdater);
+        async Task ExecuteTakePhotoCommand()
+        {
+            if (IsBusy)
+                return;
 
-					mediaStream.Position = 0;
+            if (IsNotLoggedIn)
+                return;
 
-					blobUri = await storageService.UploadBlob(mediaStream, progressUpdater);
+            bool successfulSave = false;
 
-					if (blobUri == null || thumbnailUri == null)
-					{
-						await Application.Current.MainPage.DisplayAlert("Upload Error", "There was an error uploading your photo, please try again.", "OK");
-						return;
-					}
-				}
-			}
+            try
+            {
+                IsBusy = true;
 
-			await SavePhoto(blobUri.AbsoluteUri, thumbnailUri.AbsoluteUri);
-		}
+                var actions = new List<string>();
 
-		async Task<byte[]> GetThumbnailBytes(FileStream fileStream)
-		{
-			using (MemoryStream memoryStream = new MemoryStream())
-			{
-				await fileStream.CopyToAsync(memoryStream);
-				var imageBytes = memoryStream.ToArray();
+                if (CrossMedia.Current.IsTakePhotoSupported && CrossMedia.Current.IsCameraAvailable)
+                    actions.Add("Take Photo");
 
-				var imageResizer = DependencyService.Get<IImageResizer>();
-				return imageResizer.ResizeImage(imageBytes);
-			}
-		}
+                if (CrossMedia.Current.IsPickPhotoSupported)
+                    actions.Add("Pick Photo");
 
-		async Task SavePhoto(string blobUrl, string thumbnailUrl)
-		{
-			var photo = new Photo
-			{
-				Comments = new List<Comment>(),
-				PhotoUrl = blobUrl,
-				ThumbnailUrl = thumbnailUrl,
-				Tags = new List<string>(),
-				UploadDate = DateTime.UtcNow,
-				UserId = authResult.UniqueId,
-				UpVotes = 0,
-				DownVotes = 0,
-				DisplayName = identityService.DisplayName
-			};
+                var result = await Application.Current.MainPage.DisplayActionSheet("Take or Pick Photo", "Cancel", null, actions.ToArray());
 
-			await dataService.InsertPhoto(photo);
+                MediaFile mediaFile = null;
+                if (result == "Take Photo")
+                {
+                    var options = new StoreCameraMediaOptions
+                    {
+                        PhotoSize = PhotoSize.Medium,
+                        DefaultCamera = CameraDevice.Rear
+                    };
 
-			NewPhotoAdded?.Invoke(this, new Uri(blobUrl));
-		}
+                    mediaFile = await CrossMedia.Current.TakePhotoAsync(options);
 
-	}
+                    Analytics.TrackEvent("Take Photo", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
+                }
+                else if (result == "Pick Photo")
+                {
+                    mediaFile = await CrossMedia.Current.PickPhotoAsync();
+
+                    Analytics.TrackEvent("Pick Photo", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
+                }
+                else
+                {
+                    Analytics.TrackEvent("Bailed on photo", new Dictionary<string, string> { { "displayName", identityService.DisplayName } });
+                }
+
+                if (mediaFile == null)
+                    return;
+
+                successfulSave = await UploadPhoto(mediaFile);
+            }
+            finally
+            {
+                IsBusy = false;
+            }
+
+            if (successfulSave)
+                NewPhotoAdded?.Invoke(this, new EventArgs());
+        }
+
+        async Task<bool> UploadPhoto(MediaFile mediaFile)
+        {
+            UploadProgress progressUpdater = new UploadProgress();
+            Uri blobUri = null;
+            Uri thumbnailUri = null;
+
+            if (!CrossConnectivity.Current.IsConnected)
+            {
+                await Application.Current.MainPage.DisplayAlert("Upload Error", "Cannot Upload photo, no internet connection", "OK");
+                return false;
+            }
+
+            using (var mediaStream = mediaFile.GetStream())
+            {
+                if (!(mediaStream is FileStream fs))
+                    return false;
+
+                // Create a thumbnail to go along with it!
+                using (var thumbStream = new MemoryStream(await GetThumbnailBytes(fs)))
+                {
+                    var storageService = DependencyService.Get<IStorageService>();
+
+                    thumbnailUri = await storageService.UploadBlob(thumbStream, progressUpdater);
+
+                    mediaStream.Position = 0;
+
+                    blobUri = await storageService.UploadBlob(mediaStream, progressUpdater);
+
+                    if (blobUri == null || thumbnailUri == null)
+                    {
+                        await Application.Current.MainPage.DisplayAlert("Upload Error", "There was an error uploading your photo, please try again.", "OK");
+                        return false;
+                    }
+                }
+            }
+
+            return await SavePhoto(blobUri.AbsoluteUri, thumbnailUri.AbsoluteUri);
+        }
+
+        async Task<byte[]> GetThumbnailBytes(FileStream fileStream)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                await fileStream.CopyToAsync(memoryStream);
+                var imageBytes = memoryStream.ToArray();
+
+                var imageResizer = DependencyService.Get<IImageResizer>();
+                return imageResizer.ResizeImage(imageBytes);
+            }
+        }
+
+        async Task<bool> SavePhoto(string blobUrl, string thumbnailUrl)
+        {
+            try
+            {
+                var photo = new Photo
+                {
+                    Comments = new List<Comment>(),
+                    PhotoUrl = blobUrl,
+                    ThumbnailUrl = thumbnailUrl,
+                    Tags = new List<string>(),
+                    UploadDate = DateTime.UtcNow,
+                    UserId = authResult.UniqueId,
+                    UpVotes = 0,
+                    DownVotes = 0,
+                    DisplayName = identityService.DisplayName
+                };
+
+                await dataService.InsertPhoto(photo);
+
+                await GetTotalPhotos();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Crashes.TrackError(ex);
+                return false;
+            }
+        }
+
+        void RaiseNotConnectedEvent()
+        {
+            NotConnectedEvent?.Invoke(this, new EventArgs());
+        }
+    }
 }

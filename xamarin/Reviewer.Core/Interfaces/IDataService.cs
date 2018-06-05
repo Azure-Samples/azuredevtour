@@ -7,22 +7,28 @@ using PhotoTour.Core;
 
 namespace PhotoTour.Services
 {
-	public interface IDataService
-	{
-		Task<List<Photo>> GetAllPhotos();
+    public interface IDataService
+    {
+        Task<List<Photo>> GetAllPhotos();
 
-		Task<List<Photo>> GetMyPhotos(string userId);
+        Task<List<Photo>> GetMyPhotos(string userId);
 
-		Task<Photo> FindPhotoByUrl(string url);
+        Task<Photo> FindPhotoByUrl(string url);
 
-		Task UpVote(Photo photo);
+        Task UpVote(Photo photo);
 
-		Task DownVote(Photo photo);
+        Task DownVote(Photo photo);
 
-		Task AddComment(Photo photo, Comment comment);
+        Task AddComment(Photo photo, Comment comment);
 
-		Task InsertPhoto(Photo photo);
+        Task InsertPhoto(Photo photo);
 
-		Task TagPhoto(Photo photo, string tag);
-	}
+        Task TagPhoto(Photo photo, string tag);
+
+        Task<long> TotalPhotos();
+
+        Task<List<Photo>> GetPageOfPhotos(long pageToGet, long pageSize);
+
+        Task<List<Photo>> GetLatestPhotos();
+    }
 }

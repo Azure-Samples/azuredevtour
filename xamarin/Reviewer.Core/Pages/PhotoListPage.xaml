@@ -7,11 +7,34 @@
     <ContentPage.Content>
         <Grid>
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Button Text="Previous Page"
+                    IsEnabled="{Binding CanGetPreviousPage}"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Style="{StaticResource ButtonOutline}"
+                    Margin="10"
+                    Clicked="Handle_PreviousPageClicked"
+                    x:Name="previousPage" />
             
-            <ScrollView Grid.Row="0" Margin="0,20">
+            <Button Text="Next Page"
+                    IsEnabled="{Binding CanGetNextPage}"
+                    Grid.Row="0"
+                    Grid.Column="1"
+                    Style="{StaticResource ButtonOutline}"
+                    Margin="10"
+                    Clicked="Handle_NextPageClicked"
+                    x:Name="nextPage" />
+            
+            <ScrollView Grid.Row="1" Grid.ColumnSpan="2" Margin="0,20">
                 <FlexLayout x:Name="flexLayout"
                             Wrap="Wrap"
                             JustifyContent="SpaceAround" />
@@ -22,7 +45,8 @@
                 Command="{Binding TakePhotoCommand}"
                 IsEnabled="{Binding IsNotBusy}"
                 IsVisible="{Binding IsLoggedIn}"
-                Grid.Row="1" 
+                Grid.Row="2" 
+                Grid.ColumnSpan="2"
                 Style="{StaticResource ButtonOutline}" 
                 Margin="10,0,10,10" 
                 x:Name="addNewReview" />
@@ -30,7 +54,7 @@
             <ActivityIndicator x:Name="activityIndicator"
                IsRunning="{Binding IsBusy}"
                IsVisible="{Binding IsBusy}"
-               VerticalOptions="Center" Grid.RowSpan="2" />
+               VerticalOptions="Center" Grid.RowSpan="3" Grid.ColumnSpan="2" />
         </Grid>
     </ContentPage.Content>
     <ContentPage.ToolbarItems>

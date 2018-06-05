@@ -7,153 +7,254 @@ using PhotoTour.Services;
 
 using Reviewer.SharedModels;
 using MongoDB.Bson;
+using System.Linq;
+using Microsoft.Azure.KeyVault;
+using Microsoft.Identity.Client;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
+using Xamarin.Forms;
+using System.Security.Cryptography;
 
 namespace PhotoTour.Core
 {
-	public class MongoDataService : IDataService
-	{
-		IMongoCollection<Photo> photosCollection;
+    public class MongoDataService : IDataService
+    {
+        IMongoCollection<Photo> photosCollection;
 
-		string dbName = "PhotoTour";
-		string collectionName = "Photos";
+        string dbName = "PhotoTour";
+        string collectionName = "Photos";
 
-		void Init()
-		{
-			if (photosCollection != null)
-				return;
+        async Task Init()
+        {
+            if (photosCollection != null)
+                return;
 
-			// APIKeys.Connection string is found in the portal under the "Connection String" blade
-			MongoClientSettings settings = MongoClientSettings.FromUrl(
-				new MongoUrl(APIKeys.MongoConnectionString)
-			);
+            if (string.IsNullOrWhiteSpace(APIKeys.MongoConnectionString))
+            {
+                await GetConnectionString();
+            }
 
-			settings.SslSettings =
-			new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
+            // APIKeys.Connection string is found in the portal under the "Connection String" blade
+            MongoClientSettings settings = MongoClientSettings.FromUrl(
+                new MongoUrl(APIKeys.MongoConnectionString)
+            );
 
-			// Initialize the client
-			var mongoClient = new MongoClient(settings);
+            settings.SslSettings =
+                new SslSettings() { EnabledSslProtocols = SslProtocols.Tls12 };
 
-			// This will create or get the database
-			var db = mongoClient.GetDatabase(dbName);
+            // Initialize the client
+            var mongoClient = new MongoClient(settings);
 
-			// This will create or get the collection
-			photosCollection = db.GetCollection<Photo>(collectionName);
-		}
+            // This will create or get the database
+            var db = mongoClient.GetDatabase(dbName);
 
-		public async Task AddComment(Photo photo, Comment comment)
-		{
-			if (photo.Comments == null)
-				photo.Comments = new List<Comment>();
+            // This will create or get the collection
+            photosCollection = db.GetCollection<Photo>(collectionName);
+            photosCollection = photosCollection.WithReadPreference(new ReadPreference(ReadPreferenceMode.Nearest));
+        }
 
-			photo.Comments.Add(comment);
+        async Task GetConnectionString()
+        {
+            var keyService = DependencyService.Get<IKeyVaultService>();
 
-			await ReplacePhoto(photo);
-		}
+            APIKeys.MongoConnectionString = await keyService.GetValueForKey(APIKeys.KeyVaultMongoKey);
+        }
 
-		public async Task TagPhoto(Photo photo, string tag)
-		{
-			if (photo.Tags == null)
-				photo.Tags = new List<string>();
+        public async Task AddComment(Photo photo, Comment comment)
+        {
+            if (photo.Comments == null)
+                photo.Comments = new List<Comment>();
 
-			photo.Tags.Add(tag);
+            photo.Comments.Add(comment);
 
-			await ReplacePhoto(photo);
-		}
+            await ReplacePhoto(photo);
+        }
 
-		public async Task DownVote(Photo photo)
-		{
-			photo.DownVotes += 1;
+        public async Task TagPhoto(Photo photo, string tag)
+        {
+            if (photo.Tags == null)
+                photo.Tags = new List<string>();
 
-			await ReplacePhoto(photo);
-		}
+            photo.Tags.Add(tag);
 
-		public async Task<List<Photo>> GetAllPhotos()
-		{
-			Init();
+            await ReplacePhoto(photo);
+        }
 
-			try
-			{
-				var allPhotos = await photosCollection
-					.Find(new BsonDocument())
-					.ToListAsync();
+        public async Task DownVote(Photo photo)
+        {
+            photo.DownVotes += 1;
 
-				return allPhotos;
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.Message);
-			}
-			return null;
-		}
+            await ReplacePhoto(photo);
+        }
 
-		public async Task<Photo> FindPhotoByUrl(string url)
-		{
-			Init();
+        public async Task<List<Photo>> GetAllPhotos()
+        {
+            await Init();
 
-			try
-			{
-				var thePhoto = await photosCollection.Find(p => p.PhotoUrl == url).FirstOrDefaultAsync();
+            try
+            {
+                var allPhotos = await photosCollection
+                    .Find(new BsonDocument())
+                    .ToListAsync();
 
-				return thePhoto;
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.Message);
-			}
-			return null;
-		}
+                return allPhotos;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+            return null;
+        }
 
-		public async Task<List<Photo>> GetMyPhotos(string userId)
-		{
-			Init();
+        public async Task<List<Photo>> GetLatestPhotos()
+        {
+            await Init();
 
-			try
-			{
-				var myPhotos = await photosCollection
-					.Find(p => p.UserId == userId)
-					.ToListAsync();
+            try
+            {
+                var oneDayAgo = DateTime.UtcNow.Subtract(TimeSpan.FromDays(1));
+                var latest = photosCollection.AsQueryable()
+                                             .Where(p => p.UploadDate > oneDayAgo)
+                                             .OrderByDescending(p => p.UploadDate)
+                                             .ToList();
 
-				return myPhotos;
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine(ex.Message);
-			}
-			return null;
-		}
+                return latest;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+            return null;
+        }
 
-		public async Task UpVote(Photo photo)
-		{
-			photo.UpVotes += 1;
+        public async Task<Photo> FindPhotoByUrl(string url)
+        {
+            await Init();
 
-			await ReplacePhoto(photo);
-		}
+            try
+            {
+                var thePhoto = await photosCollection.Find(p => p.PhotoUrl == url).FirstOrDefaultAsync();
 
-		async Task ReplacePhoto(Photo photo)
-		{
-			Init();
-			try
-			{
-				await photosCollection.ReplaceOneAsync(p => p._id.Equals(photo._id), photo);
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine($"*** ERROR: {ex.Message}");
-			}
-		}
+                return thePhoto;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+            return null;
+        }
 
-		public async Task InsertPhoto(Photo photo)
-		{
-			Init();
+        public async Task<List<Photo>> GetMyPhotos(string userId)
+        {
+            await Init();
 
-			try
-			{
-				await photosCollection.InsertOneAsync(photo);
-			}
-			catch (Exception ex)
-			{
-				System.Diagnostics.Debug.WriteLine($"*** ERROR: {ex.Message}");
-			}
-		}
-	}
+            try
+            {
+                var myPhotos = await photosCollection
+                    .Find(p => p.UserId == userId)
+                    .ToListAsync();
+
+                return myPhotos;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+            return null;
+        }
+
+        public async Task UpVote(Photo photo)
+        {
+            photo.UpVotes += 1;
+
+            await ReplacePhoto(photo);
+        }
+
+        async Task ReplacePhoto(Photo photo)
+        {
+            await Init();
+            try
+            {
+                await photosCollection.ReplaceOneAsync(p => p._id.Equals(photo._id), photo);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"*** ERROR: {ex.Message}");
+            }
+        }
+
+        public async Task InsertPhoto(Photo photo)
+        {
+            await Init();
+
+            try
+            {
+                await photosCollection.InsertOneAsync(photo);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"*** ERROR: {ex.Message}");
+            }
+        }
+
+        public async Task<long> TotalPhotos()
+        {
+            try
+            {
+                await Init();
+
+                var bannedUsers = Settings.BlockedUsers;
+
+                var count = photosCollection.AsQueryable()
+                                            .Where(p => !bannedUsers.Contains(p.UserId))
+                                            .ToList()
+                                            .Count();
+
+                //var query = from p in photosCollection.AsQueryable()
+                //            where p.UserId != bannedUsers.First()
+                //            select p;
+
+                //var count = query.Count();
+
+                //var count = await photosCollection.CountAsync<Photo>(p => !bannedUsers.Any(bu => bu.Equals(p.UserId)));
+
+                return count;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"*** {ex.Message}");
+            }
+            return 0;
+        }
+
+        public async Task<List<Photo>> GetPageOfPhotos(long pageToGet, long pageSize)
+        {
+            await Init();
+
+            try
+            {
+                var numberToSkip = (pageToGet - 1) * pageSize;
+
+                var bannedUsers = Settings.BlockedUsers;
+
+                //var photoList = await photosCollection.Find<Photo>(p => true)
+                //.Skip((int?)numberToSkip)
+                //.Limit((int?)pageSize)
+                //.ToListAsync();
+
+                var photoQuery = photosCollection.AsQueryable()
+                                                 .Where(p => !bannedUsers.Contains(p.UserId))
+                                                 .OrderByDescending(p => p.UploadDate)
+                                                 .Skip((int)numberToSkip)
+                                                 .Take((int)pageSize)
+                                                 .ToList();
+
+                return photoQuery;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(ex.Message);
+            }
+            return null;
+        }
+    }
 }

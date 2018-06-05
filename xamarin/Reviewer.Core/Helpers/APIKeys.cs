@@ -1,17 +1,10 @@
 ﻿using System;
+using MongoDB.Bson.Serialization.IdGenerators;
 
 namespace PhotoTour.Services
 {
-	public static class APIKeys
-	{
-		public static readonly string MongoConnectionString = "";
-
-		public static readonly string StorageAccountName = "";
-		public static readonly string StorageAccountUrlSuffix = "core.windows.net";
-		public static readonly string StorageAccountKey = "";
-		public static readonly string PhotosContainerName = "apac-2018";
-
-		public static readonly string AppCenterIOSKey = "";
-		public static readonly string AppCenterDroidKey = "";
-	}
+    public static class APIKeys
+    {
+        public static readonly string StorageAccountUrlSuffix = "";         public static readonly string AppCenterIOSKey = "";         public static readonly string AppCenterDroidKey = "";          public static string MongoConnectionString = "";         public static string StorageAccountName = "";         public static string StorageAccountKey = "";         public static string PhotosContainerName = "";          public static readonly string KeyVaultClientId = "";         public static readonly string KeyVaultClientSecret = "";         public static readonly string KeyVaultUrl = "";          public static readonly string KeyVaultMongoKey = "";         public static readonly string KeyVaultStorageNameKey = "";         public static readonly string KeyVaultStorageAcctKeyKey = "";         public static readonly string KeyValuePhotosContainerKey = "";
+    }
 }

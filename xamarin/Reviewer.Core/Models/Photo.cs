@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 
 namespace PhotoTour.Core
 {
+	[BsonIgnoreExtraElements]
 	public class Photo : ObservableObject
 	{
 		[BsonId]
@@ -31,12 +32,7 @@ namespace PhotoTour.Core
 		[BsonElement("comments")]
 		public List<Comment> Comments { get => comments; set => SetProperty(ref comments, value); }
 
-	    //Comment comment;
-	    //[BsonElement("comment")]
-	    //public Comment Comment { get => comment; set => SetProperty(ref comment, value); }
-
-
-        int upVotes;
+		int upVotes;
 		[BsonElement("upVotes")]
 		public int UpVotes { get => upVotes; set => SetProperty(ref upVotes, value); }
 
@@ -55,14 +51,5 @@ namespace PhotoTour.Core
 		string displayName;
 		[BsonElement("displayName")]
 		public string DisplayName { get => displayName; set => SetProperty(ref displayName, value); }
-
-	    string caption;
-	    [BsonElement("caption")]
-	    public string Caption { get => caption; set => SetProperty(ref caption, value); }
-
-
-        [BsonElement("votes")]
-        [BsonRepresentation(BsonType.Int64, AllowTruncation = true)]
-		public int Votes { get; set; }
 	}
 }

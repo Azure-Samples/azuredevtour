@@ -19,7 +19,7 @@
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <Image Grid.Row="0" Grid.ColumnSpan="2" Source="{Binding PhotoUrl}" BackgroundColor="Black" />
+            <Image Grid.Row="0" Grid.ColumnSpan="2" Source="{Binding PhotoUrl}" BackgroundColor="Black" x:Name="detailImage" />
 
             <StackLayout Grid.Row="1" Grid.ColumnSpan="2" Spacing="0">
                 <BoxView HeightRequest="5" Color="{StaticResource Accent}" />
@@ -83,4 +83,8 @@
                VerticalOptions="Center" Grid.RowSpan="6" Grid.ColumnSpan="2" />
         </Grid>
     </ContentPage.Content>
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Issue?" Clicked="Issue_Clicked" />
+    </ContentPage.ToolbarItems>
 </ContentPage>

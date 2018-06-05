@@ -4,70 +4,101 @@ using System.Collections.Generic;
 using Xamarin.Forms;
 using Reviewer.Core;
 using Xamarin.Forms.PlatformConfiguration.iOSSpecific;
+using Newtonsoft.Json.Bson;
+using System.Threading.Tasks;
 
 
 namespace PhotoTour.Core
 {
-	public partial class PhotoListPage : ContentPage
-	{
-		readonly int photoHeight = 120;
-		readonly int photoWidth = 120;
+    public partial class PhotoListPage : ContentPage
+    {
+        readonly int photoHeight = 120;
+        readonly int photoWidth = 120;
 
-		PhotosListViewModel vm;
-		public PhotoListPage()
-		{
-			InitializeComponent();
+        PhotosListViewModel vm;
+        public PhotoListPage()
+        {
+            InitializeComponent();
 
-			On<Xamarin.Forms.PlatformConfiguration.iOS>().SetUseSafeArea(true);
+            On<Xamarin.Forms.PlatformConfiguration.iOS>().SetUseSafeArea(true);
 
-			vm = new PhotosListViewModel();
-			BindingContext = vm;
+            vm = new PhotosListViewModel();
+            BindingContext = vm;
 
-			LoadPhotoCollection();
-		}
+            MessagingCenter.Subscribe<BlockUserMessage>(this, BlockUserMessage.Message, async (obj) =>
+            {
+                vm.CurrentPage = 1;
+                await LoadPhotoCollection();
+            });
+        }
 
-		protected override void OnAppearing()
-		{
-			base.OnAppearing();
+        async protected override void OnAppearing()
+        {
+            base.OnAppearing();
 
-			vm.NewPhotoAdded += HandleNewPhoto;
-		}
+            vm.NewPhotoAdded += HandleNewPhoto;
 
-		protected override void OnDisappearing()
-		{
-			base.OnDisappearing();
+            if (flexLayout.Children.Count == 0)
+            {
+                await LoadPhotoCollection();
+            }
+        }
 
-			vm.NewPhotoAdded -= HandleNewPhoto;
-		}
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
 
-		void HandleNewPhoto(object sender, Uri photoUri)
-		{
-			var iv = new ImageView();
-			iv.WidthRequest = photoWidth;
-			iv.HeightRequest = photoHeight;
-			iv.TheImage.Source = ImageSource.FromUri(photoUri);
+            vm.NewPhotoAdded -= HandleNewPhoto;
+        }
 
-			flexLayout.Children.Add(iv);
-		}
+        async void HandleNewPhoto(object sender, EventArgs eventArgs)
+        {
+            //var iv = new ImageView();
+            //iv.WidthRequest = photoWidth;
+            //iv.HeightRequest = photoHeight;
+            //iv.TheImage.Source = ImageSource.FromUri(photoUri);
 
-		async void LoadPhotoCollection()
-		{
-			var photos = await vm.LoadPhotos();
+            //flexLayout.Children.Add(iv);
 
-			if (photos == null)
-				return;
+            // Jump to the last page to show the latest photo
+            vm.CurrentPage = vm.TotalPages;
+            await LoadPhotoCollection();
+        }
 
-			foreach (var photo in photos)
-			{
-				var iv = new ImageView();
-				iv.WidthRequest = photoWidth;
-				iv.HeightRequest = photoHeight;
-				iv.TheImage.Source = ImageSource.FromUri(new Uri($"{photo.PhotoUrl}"));
+        async Task LoadPhotoCollection()
+        {
+            var photos = await vm.LoadPhotos();
 
-				flexLayout.Children.Add(iv);
-			}
-		}
+            if (photos == null)
+                return;
 
-	}
+            flexLayout.Children.Clear();
+
+            foreach (var photo in photos)
+            {
+                var iv = new ImageView();
+                iv.WidthRequest = photoWidth;
+                iv.HeightRequest = photoHeight;
+
+                Uri photoUri = null;
+
+                iv.TheImage.Source = ImageSource.FromUri(new Uri($"{photo.PhotoUrl}"));
+
+                flexLayout.Children.Add(iv);
+            }
+        }
+
+        async void Handle_NextPageClicked(object sender, EventArgs args)
+        {
+            vm.CurrentPage += 1;
+            await LoadPhotoCollection();
+        }
+
+        async void Handle_PreviousPageClicked(object sender, EventArgs args)
+        {
+            vm.CurrentPage -= 1;
+            await LoadPhotoCollection();
+        }
+    }
 }
 

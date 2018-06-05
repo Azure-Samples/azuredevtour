@@ -15,7 +15,6 @@
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>1</integer>
-		<integer>2</integer>
 	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
@@ -63,7 +62,13 @@
 	<string>Pick photos from gallery for the tour</string>
 	<key>CFBundleName</key>
 	<string>Photo Tour</string>
+	<key>NSContactsUsageDescription</key>
+	<string>Access your contacts</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Access the calendar</string>
+	<key>NSSiriUsageDescription</key>
+	<string>Access Siri</string>
 	<key>CFBundleVersion</key>
-	<string>9</string>
+	<string>19</string>
 </dict>
 </plist>
