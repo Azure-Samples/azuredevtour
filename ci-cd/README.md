@@ -1,5 +1,7 @@
 # Demo Setup
 ## Node.js app in a github repo
+The following tabs are available for download as an <a href="chrome_bookmarks.html">export from Chrome</a>. This should make life easier setting up your local environment.
+
 <a href="https://portal.azure.com">Tab 1</a> – Azure Portal
 
 <a href="https://ms.portal.azure.com/#@microsoft.onmicrosoft.com/resource/subscriptions/3a06a10f-ae29-4924-b6a7-dda0ea91d347/resourceGroups/VstsResourceGroup-APACAzureTour/providers/microsoft.visualstudio/account/msvstsdemo-b/project/APACAzureTour">Tab 2</a> – Finished Node.js Azure DevOps Project, no customization
