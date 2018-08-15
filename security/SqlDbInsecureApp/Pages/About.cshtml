@@ -1,0 +1,26 @@
+﻿@page
+@model AboutModel
+@{
+    ViewData["Title"] = "Logged In!";
+}
+<h2>Top Secret Data</h2>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>First</th>
+            <th>Last</th>
+            <th>Email</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var row in Model.Records)
+        {
+        <tr>
+            <td>@row.FirstName</td>
+            <td>@row.LastName</td>
+            <td>@row.EmailAddress</td>
+        </tr>
+        }
+    </tbody>
+</table>

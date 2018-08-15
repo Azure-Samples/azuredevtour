@@ -1,0 +1,12 @@
+@page
+
+@{
+    var headers = HttpContext.Request.Headers;
+}
+
+@foreach(var header in headers)
+{
+    <hr />
+    <b>@header.Key</b><br />
+    @header.Value
+}
